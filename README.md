@@ -8,7 +8,6 @@ https://github.com/Andrew-J-Cleary/NANOCUBES
 
 
 
-extra stuff
 
 Idea:
 1. a new interface on the browser  ( run anomaly detection button )
@@ -35,3 +34,5 @@ then look at your http://localhost:8000/ and python scripts work hopefully
 To Run In Browser-
 able to run cgi scripts
 change port # and time window in features.js global variable to the wanted server port and time bins you want to consider
+
+.
