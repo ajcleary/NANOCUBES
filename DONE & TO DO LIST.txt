@@ -1,0 +1,35 @@
+
+Done:
+
+-added a simple button on the ui find anomalies (select a rectangle)
+-added a selection region algorithm to search for anomalies inside the region
+-fixed feature function to work
+-formatted json data nicely
+-formatted the file like this so we can use the feature list for zooming and highlighting:
+ 	{"description", "geoCenter", "name", "resolution", "tileSelection"{TILES}, "timeSelect", "timeZoom": {"endMilli""startMilli"},"zoomLevel" }  
+-changed feature function to display anomalies 
+-figured out outdated feature file  
+-added full algorithm button( User )               
+-fixed hanging debug algorithm or cgi script        
+-save file rewriting 
+-improved gui to pretty buttons etc.
+-global port variable
+
+
+
+To Do List:   (for IN PROGRESS items put your initials after the :) add to the list
+
+-fix time zoom for full anomaly
+
+-add zoom for fulkl anomaly
+
+-make anomaly detection server side :
+
+regionanomaly.py
+-add user inputs time window to the anomaly region 
+	selection ( default to full time series )          : 
+
+fullanomaly.py
+-add user inputs time window to the full anomaly algorithm: 
+-add user inputs for min max levels                        : 
+
