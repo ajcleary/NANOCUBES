@@ -3,6 +3,7 @@ import sys
 import traversal
 import urlmakers
 
+
 class coord:
 	def __init__(self, x, y, z):
 		self.x = x
