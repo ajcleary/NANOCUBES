@@ -179,12 +179,17 @@ function anomalydetection(){
     var newFeature = createFeatureFromCurrent();
     newFeature.name = "Run # " + _index.toString() + " " ;
     _index = _index + 1;
-
     var tiles  = constrainer.getTiles();
-    console.log("")
     if (tiles == null){
-        alert("Please select a square");
+        alert("please choose a region to run detection on");
     }
+    /*
+    else if (tiles.length != 4) {
+        alert("please don't use the polygon tool");
+    }
+    */
+    //var dataToSend = { tileSelection: tiles };
+    //console.log(newFeature);
     else {
         var dataToSend = { feature: newFeature , portnum: port , timestart: timestart, timeend: timeend}
         $.ajax({
@@ -195,25 +200,24 @@ function anomalydetection(){
                 console.log(response)
                 var list = []
                 list = JSON.parse(response)
-                //console.log(list)
-                if (response.localeCompare("not a square\n") == 0){
-                    alert("please don't use the polygon tool")
+                if (tiles.length != 4){
+                    alert("no zooming was done for this run")
+                    console.log(response)
                 }
-                else {
-                    for (var i = 0; i < list.length; i++){
-                        var item = list[i];
-                        //console.log(item)
+                for (var i = 0; i < list.length; i++){
+                    var item = list[i];
+                    //console.log(item)
                     
-                        $("#anomalyList").append( $(document.createElement("option"))
-                            .text(item.name)
-                            .attr("value", _currList.length)
-                        );
+                    $("#anomalyList").append( $(document.createElement("option"))
+                        .text(item.name)
+                        .attr("value", _currList.length)
+                    );
                         
                     _currList.push(item);
                     hideFeatureSaveDialog();
-                    }
                 }
-                //console.log(response)
+                
+                 //console.log(response)
             },
             error: function(jqXHR, textStatus, errorThrown){
                 //alert("Feature could not be added on server!");
@@ -222,7 +226,6 @@ function anomalydetection(){
             }
         });
     }
-
 }
 
 function validateFeatureAndSave(){
