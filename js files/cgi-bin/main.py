@@ -3,7 +3,6 @@ import sys
 import traversal
 import urlmakers
 
-
 class coord:
 	def __init__(self, x, y, z):
 		self.x = x
@@ -32,7 +31,18 @@ def boxAnomaly(x1, x2, y1, y2, z, port , tstart, tend):
 		minSplit = 0
 	anomlist = traversal.runSelectedMap(coords, minSplit, port , tstart, tend)
 	return anomlist
+
 ################################################################################################
+
+
+def polygonAnomaly(coordlist, port, tstart, tend):
+	
+	anomalies = traversal.runPolygonSelection(coordlist, port, tstart, tend)
+	return anomalies
+
+
+################################################################################################
+
 
 def fullAnomaly(port, timestart, timeend, minlevel, maxlevel):
 	#print "got into main fullanomaly"

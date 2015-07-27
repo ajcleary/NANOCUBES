@@ -21,41 +21,42 @@ try:
     x2 = boxlist[2]['x']
     z = boxlist[0]['level']
 
+
+    url  = "http://nanocube.govspc.att.com:" + port + "/schema"
+
+    response = urllib.urlopen(url)
+    data = json.loads(response.read())
+    timestring = data['metadata'][0]['value']
+
+    timestringstrp = timestring[0:19]
+    timebucket = timestring[len(timestring)-1]
+    # this is the time bucket multipliers
+    timebucketmultiplier = int(timestring[20:len(timestring)-1])
+
+    date = time.strptime(timestringstrp,"%Y-%m-%d_%H:%M:%S")
+    FIRSTDATE = int(time.mktime(date))
+
+
+    if timebucket == "s":
+        secondsperbin = 1
+        msecondsperbin = 1000
+
+    elif timebucket == "m":
+        secondsperbin = 60
+        msecondsperbin = 1000*60
+
+    elif timebucket == "h":
+        secondsperbin = 60*60
+        msecondsperbin = 1000*60*60
+
+    elif timebucket == "d":
+        secondsperbin = 60*60*24
+        msecondsperbin = 1000*60*60*24
+
+    #this checks to see if region was drawn with the square tool
     if (boxlist[0]['x'] == boxlist[1]['x'] and boxlist[2]['x'] == boxlist[3]['x'] and boxlist[0]['y'] == boxlist[3]['y'] and boxlist[1]['y'] == boxlist[2]['y']):
 
-        url  = "http://nanocube.govspc.att.com:" + port + "/schema"
-
-        response = urllib.urlopen(url)
-        data = json.loads(response.read())
-        timestring = data['metadata'][0]['value']
-
-        timestringstrp = timestring[0:19]
-        timebucket = timestring[len(timestring)-1]
-        # this is the time bucket multipliers
-        timebucketmultiplier = int(timestring[20:len(timestring)-1])
-
-        date = time.strptime(timestringstrp,"%Y-%m-%d_%H:%M:%S")
-        FIRSTDATE = int(time.mktime(date))
-
-
-
-        if timebucket == "s":
-            secondsperbin = 1
-            msecondsperbin = 1000
-
-        elif timebucket == "m":
-            secondsperbin = 60
-            msecondsperbin = 1000*60
-
-        elif timebucket == "h":
-            secondsperbin = 60*60
-            msecondsperbin = 1000*60*60
-
-        elif timebucket == "d":
-            secondsperbin = 60*60*24
-            msecondsperbin = 1000*60*60*24
-
-            
+        
         a = main.boxAnomaly(x1, x2, y1, y2, z, port, jsonIn['timestart'], jsonIn['timeend'])
         anomlist = []
         length = len(a)
@@ -119,13 +120,42 @@ try:
                     
             anomlist.append(anomdict)
         
-        print json.dumps(anomlist)
+        #print json.dumps(anomlist)
+        print anomlist
 
+    #this statement will run if the polygon tool was used to draw a region instead of the square tool
     else: 
-        print "not a square"
+        anomalies = main.polygonAnomaly(boxlist, port, jsonIn['timestart'], jsonIn['timeend'])
+        polygonAnomlist = []
 
+        tilelist = []
+        for i in range(0, len(boxlist)):
+            currtiledict = {}
+            currtiledict['x'] = boxlist[i]['x']
+            currtiledict['y'] = boxlist[i]['y']
+            currtiledict['level'] = boxlist[i]['level']
+            tilelist.append(currtiledict)
 
-        
+        for i in range(0, len(anomalies)):
+            currpolygondict = dict()
+            anomaly = anomalies[i]
+            currentTime = FIRSTDATE + (anomaly*secondsperbin*timebucketmultiplier)
+            currpolygondict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
+            currpolygondict['tileSelection'] = tilelist
+            currpolygondict['description'] = "Time bucket: "+ str(anomaly) +  " \nthis anomaly occured around " + str(datetime.datetime.fromtimestamp(currentTime))
+            currpolygondict['timeSelect'] = dict()
+            currpolygondict['timeZoom'] = dict()
+            currpolygondict['timeSelect']['startMilli'] = long(currentTime*1000 - msecondsperbin/2)
+            currpolygondict['timeSelect']['endMilli'] = long(currentTime*1000 + msecondsperbin/2)
+            currpolygondict['timeZoom']['startMilli'] = long(currentTime*1000 - 10*msecondsperbin)
+            currpolygondict['timeZoom']['endMilli'] = long(currentTime*1000 + 10*msecondsperbin)
+            currpolygondict['zoomLevel'] = 3
+            currpolygondict['geoCenter'] = [0,0]
+            currpolygondict['resolution'] = 7
+            polygonAnomlist.append(currpolygondict)
+
+        print json.dumps(polygonAnomlist)
+        #print polygonAnomlist    
 
 
     #print a
