@@ -3,14 +3,7 @@ NANOCUBE ANOMALY DETECTION ALGORITHM, PUTTING IT IN THE BROWSER, STEPS AND LOG
 
 Authors: 2015 Summer Interns: Matthew Lipshultz, Julien Homble, Andrew Cleary
 
-test of code inserted
-
 https://github.com/Andrew-J-Cleary/NANOCUBES
-
-
-
-
-extra stuff
 
 Idea:
 1. a new interface on the browser  ( run anomaly detection button )

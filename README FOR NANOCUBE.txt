@@ -2,12 +2,6 @@ NANOCUBE ANOMALY DETECTION ALGORITHM, PUTTING IT IN THE BROWSER, STEPS AND LOG
 
 Authors: 2015 Summer Interns: Matthew Lipshultz, Julien Homble, Andrew Cleary
 
-testing automerge
-
-
-
-
-
 Idea:
 1. a new interface on the browser  ( run anomaly detection button )
 2. user selects run or highlights a region and selects run
