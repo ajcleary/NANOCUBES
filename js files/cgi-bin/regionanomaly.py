@@ -64,7 +64,9 @@ try:
         for i in range(0, length):
             anomdict = {}
 
-            anomdict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
+            anomdict['name'] = "anomaly" + str(i+1)
+            # use this to get the run number
+            # anomdict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
             currdictlist = []
             for j in range(0, 4):
                 currdict = {}
@@ -109,17 +111,17 @@ try:
             anomdict['timeSelect'] = dict()
             anomdict['timeZoom'] = dict()
 
-            anomdict['timeSelect']['startMilli'] = currentTime*1000 - msecondsperbin/2
-            anomdict['timeSelect']['endMilli'] = currentTime*1000 + msecondsperbin/2
-            anomdict['timeZoom']['startMilli'] = currentTime*1000 - 10*msecondsperbin
-            anomdict['timeZoom']['endMilli'] = currentTime*1000 + 10*msecondsperbin
+            anomdict['timeSelect']['startMilli'] = long(currentTime*1000 - msecondsperbin/2)
+            anomdict['timeSelect']['endMilli'] = long(currentTime*1000 + msecondsperbin/2)
+            anomdict['timeZoom']['startMilli'] = long(currentTime*1000 - 10*msecondsperbin)
+            anomdict['timeZoom']['endMilli'] = long(currentTime*1000 + 10*msecondsperbin)
 
             anomdict['zoomLevel'] = zoomlevel
                     
             anomlist.append(anomdict)
         
-        #print json.dumps(anomlist)
-        print anomlist
+        print json.dumps(anomlist)
+        #print anomlist
 
     #this statement will run if the polygon tool was used to draw a region instead of the square tool
     else: 
@@ -138,7 +140,8 @@ try:
             currpolygondict = dict()
             anomaly = anomalies[i]
             currentTime = FIRSTDATE + (anomaly*secondsperbin*timebucketmultiplier)
-            currpolygondict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
+            # add variables for the new anomaly to shot it in the gui nice
+            currpolygondict['name'] = "anomaly" + str(i+1)
             currpolygondict['tileSelection'] = tilelist
             currpolygondict['description'] = "Time bucket: "+ str(anomaly) +  " \nthis anomaly occured around " + str(datetime.datetime.fromtimestamp(currentTime))
             currpolygondict['timeSelect'] = dict()
@@ -153,39 +156,8 @@ try:
             polygonAnomlist.append(currpolygondict)
 
         print json.dumps(polygonAnomlist)
-        #print polygonAnomlist    
+        #print polygonAnomlist
 
-
-    #print a
-    #currjson = JSONEncoder().encode({"foo": ["bar", "baz"]})
-    #currjson = "{ 'tileSelection': "
-    #currjson += str(a)
-    #currjson += "}"
-    #print currjson
-
-    if platform.system() == "Windows": #for development
-        pass
-
-
-        # append to the file
-        #######################################################################################
-        #with open("feature_list.js", "r") as fin:
-        #    savefile = json.loads(fin.read())
-
-        #for item in anomlist:
-        #    savefile.append(item)
-
-        # to append it to the file 
-        #with open("feature_list.js", "w") as fout:
-        #        fout.write(json.dumps(anomlist, sort_keys=True, indent=4, separators=(",",": ")))
-
-        #######################################################################################
-
-
-    else: 
-    #platform is linux
-        print os.getcwd()
-        print "Failure"
 except SystemExit:
     pass
 except:

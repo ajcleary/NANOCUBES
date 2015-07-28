@@ -8,15 +8,17 @@ cgitb.enable()
 print "Content-Type: text/plain\n\n",
 
 try:
+	# load input
 	jsonIn = json.load(sys.stdin)
 
+	# variables from features.js
 	port = jsonIn['portnum']
 	timestart = jsonIn['timestart']
 	timeend = jsonIn['timeend']
 	minlevel = jsonIn['minlevel']
 	maxlevel = jsonIn['maxlevel']
 
-
+	# time bucket math
 	url = "http://nanocube.govspc.att.com:"+port+"/schema"
 	response = urllib.urlopen(url)
 	data = json.loads(response.read())
@@ -40,11 +42,11 @@ try:
 		secondsperbin = 60*60*24
 		msecondsperbin = 1000*60*60*24
 
-
+	# run algorithm  - output: list of anomalies
 	anomlist = main.fullAnomaly(port, timestart, timeend, minlevel, maxlevel)
 	#print anomlist
 	jsonlist = []
-
+	# add info to each anomaly so it can be described and seen in gui
 	for i in range(0, len(anomlist)):
 		anomdictlist = list()
 		currdict = dict()
@@ -77,6 +79,8 @@ try:
 
 		currdict['tileSelection'] = anomdictlist
 		currdict['name'] = "anomaly" + str(i+1)
+		# use this name to get the run number
+        # anomdict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
 
 		latlon = main.convertCoords(currx, curry, level)    
 		geo = [latlon[0],latlon[1]]
@@ -87,26 +91,23 @@ try:
 		currentTime = FIRSTDATE + (anomaly*secondsperbin*timebucketmultiplier)
 		currdict['timeSelect'] = dict()
 		currdict['timeZoom'] = dict()
-		currdict['timeSelect']['startMilli'] = currentTime*1000 - msecondsperbin/2
-		currdict['timeSelect']['endMilli'] =  currentTime*1000 + msecondsperbin/2
-		currdict['timeZoom']['startMilli'] = currentTime*1000 - 10*msecondsperbin
-		currdict['timeZoom']['endMilli'] = currentTime*1000 + 10*msecondsperbin
+		currdict['timeSelect']['startMilli'] = long(currentTime*1000 - msecondsperbin/2)
+		currdict['timeSelect']['endMilli'] =  long(currentTime*1000 + msecondsperbin/2)
+		currdict['timeZoom']['startMilli'] = long(currentTime*1000 - 10*msecondsperbin)
+		currdict['timeZoom']['endMilli'] = long(currentTime*1000 + 10*msecondsperbin)
+		# add it to the output
 		jsonlist.append(currdict)
 
+	# like returning from python to js
 	print json.dumps(jsonlist)
 
-		#print anomdictlist
-		#print currx
-		#print curry
-		#print level
-		#print anomaly
-
-
-
-
-
+	#if it is not windows it will not work
+	if platform.system() != "Windows":
+		#platform is linux
+		print os.getcwd()
+		print "Failure"
 	with open("feature_list.js", "w") as fout:
-                fout.write(json.dumps(jsonlist, sort_keys=True, indent=4, separators=(",",": ")))
+		fout.write(json.dumps(jsonlist, sort_keys=True, indent=4, separators=(",",": ")))
 
 except SystemExit:
     pass
