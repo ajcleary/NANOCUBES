@@ -8,15 +8,15 @@ var _featureList = [];
 var _index = 1;
 var _currList = [];
 
-// change to the name of your nanocube server port here
-var port = "29502";
+// change to the name of your nanocube server port in main
+
 // time start and end for the timeline of data
 var timestart = "1";
 var timeend = "9";
 
 // defaults for min and max level | 2 and 12
 var minlevel = "2";
-var maxlevel = "12";
+var maxlevel = "5" ;
 
 
 function forceConstraints(constraints){
@@ -144,7 +144,7 @@ function fullanomalydetection(){
         data: JSON.stringify(dataToSend),
         success: function(response){
             $('#runbutton').prop("disabled",false);
-            $("#loadingmessage").hide()
+            $("#loadingmessage").hide();
             console.log(response)
             var list = []
             list = JSON.parse(response)

@@ -3,7 +3,9 @@ import sys, json, platform, os, urllib, time
 from traversal import main
 import cgitb
 import datetime
+
 cgitb.enable()
+
 #print the header
 print "Content-Type: text/plain\n\n",
 
@@ -36,19 +38,15 @@ try:
     date = time.strptime(timestringstrp,"%Y-%m-%d_%H:%M:%S")
     FIRSTDATE = int(time.mktime(date))
 
-
     if timebucket == "s":
         secondsperbin = 1
         msecondsperbin = 1000
-
     elif timebucket == "m":
         secondsperbin = 60
         msecondsperbin = 1000*60
-
     elif timebucket == "h":
         secondsperbin = 60*60
         msecondsperbin = 1000*60*60
-
     elif timebucket == "d":
         secondsperbin = 60*60*24
         msecondsperbin = 1000*60*60*24
