@@ -36,18 +36,18 @@ def boxAnomaly(x1, x2, y1, y2, z, port , bin_start, group_size, num_groups, hist
 ################################################################################################
 
 
-def polygonAnomaly(coordlist, port, tstart, tend, histogram):
+def polygonAnomaly(coordlist, port,  bin_start, group_size, num_groups, histogram):
 	
-	anomalies = traversal.runPolygonSelection(coordlist, port, tstart, tend, histogram)
+	anomalies = traversal.runPolygonSelection(coordlist, port,  bin_start, group_size, num_groups, histogram)
 	return anomalies
 
 
 ################################################################################################
 
 
-def fullAnomaly(port, timestart, timeend, minlevel, maxlevel,histogram):
+def fullAnomaly(port,  bin_start, group_size, num_groups, minlevel, maxlevel,histogram):
 	#print "got into main fullanomaly"
-	a = traversal.initializeEntireMap(int(minlevel), int(maxlevel), port, timestart, timeend, histogram)
+	a = traversal.initializeEntireMap(int(minlevel), int(maxlevel), port,  bin_start, group_size, num_groups, histogram)
 	#print "did traversal initialize"
 	return a
 

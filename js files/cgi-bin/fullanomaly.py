@@ -14,7 +14,8 @@ try:
 	# variables from features.js
 	port = jsonIn['portnum']
 	timestart = jsonIn['timestart']
-	timeend = jsonIn['timeend']
+	numtimebins = jsonIn['numtimebins']
+
 	minlevel = jsonIn['minlevel']
 	maxlevel = jsonIn['maxlevel']
 
@@ -46,16 +47,41 @@ try:
 	eventTypes = jsonIn['eventTypes']
 	newhist = deepcopy(histograms)
 
-    #Need to convert the histograms dictionary to the values that will be queried
+	#Need to convert the histograms dictionary to the values that will be queried
 	if (histograms != None):
 		keys  = histograms.keys()
 		for i in range(0, len(histograms)):
 			for j in range(0, len(histograms[keys[i]])):
 				currindex = eventTypes.index(histograms[keys[i]][j])
 				newhist[keys[i]][j] = currindex
-
+	#This url is for getting the start/end time bin information
+	url  = "http://nanocube.govspc.att.com:" + port + "/tquery"
+	#default, change to user defined eventually
+	group_size = int(jsonIn['groupsize'])
+	#get the selected time series or the full time series if none selected
+	if(jsonIn['numtimebins'] == None):
+		if( jsonIn['timeSelect']['startMilli'] != None ):
+			tselectstart = long(jsonIn['timeSelect']['startMilli'])
+			tselectend = long(jsonIn['timeSelect']['endMilli'])
+			te = tselectend - tselectstart
+			window = int(te/msecondsperbin)
+			starting_bucket = int((tselectstart - (FIRSTDATE*1000))/(msecondsperbin))
+			#print starting_bucket
+			#print window
+		else:
+			response = urllib.urlopen(url)
+			data = json.loads(response.read())
+			bothnums =  "0000000000000000" + data['root']['children'][0]['addr']
+			bothnums = bothnums[-16:]
+			lasteight = int(bothnums[-8:], 16)
+			# first 8
+			starting_bucket = int(bothnums,16) >> 32
+			window = (lasteight - starting_bucket)/group_size
+	else:
+		window = jsonIn['numtimebins']
+		starting_bucket = jsonIn['timestart']
 	# run algorithm  - output: list of anomalies
-	anomlist = main.fullAnomaly(port, timestart, timeend, minlevel, maxlevel, newhist)
+	anomlist = main.fullAnomaly(port, starting_bucket , group_size , window, minlevel, maxlevel, newhist)
 	#print anomlist
 	jsonlist = []
 	# add info to each anomaly so it can be described and seen in gui
@@ -92,7 +118,7 @@ try:
 		currdict['tileSelection'] = anomdictlist
 		currdict['name'] = "anomaly" + str(i+1)
 		# use this name to get the run number
-        # anomdict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
+		# anomdict['name'] = jsonIn['feature']['name'] + "anomaly" + str(i+1)
 
 		latlon = main.convertCoords(currx, curry, level)    
 		geo = [latlon[0],latlon[1]]
@@ -123,7 +149,7 @@ try:
 		fout.write(json.dumps(jsonlist, sort_keys=True, indent=4, separators=(",",": ")))
 
 except SystemExit:
-    pass
+	pass
 except:
-    print "Exception"
-    print sys.exc_info()
+	print "Exception"
+	print sys.exc_info()

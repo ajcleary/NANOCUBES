@@ -31,7 +31,16 @@ function fullanomalydetection(){
     $("#loadingmessage").show()
     var categories = constrainer.getCategories();
     categories = (categories === undefined) ? null : categories;
-    var dataToSend = { portnum: port , timestart: timestart, timeend: timeend, minlevel : minlevel , maxlevel : maxlevel, histograms: categories, eventTypes: eventTypes, timeSelect: timeseries.getSelectRange() }
+    var dataToSend = { 
+        portnum: port,
+        timestart: timestart,
+        numtimebins: numtimebins,
+        minlevel : minlevel,
+        maxlevel : maxlevel,
+        groupsize: groupsize,
+        histograms: categories,
+        eventTypes: eventTypes,
+        timeSelect: timeseries.getSelectRange() }
     $.ajax({
         url: "/cgi-bin/fullanomaly.py",
         type: "POST",

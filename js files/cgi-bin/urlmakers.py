@@ -25,7 +25,7 @@ def urlBoxMaker(x1, x2, y1, y2, z, port, bin_start, group_size, num_groups, hist
 
 ################################################################################################
 
-def urlPolygonMaker(coordList, port, timestart, timeend, histogram):
+def urlPolygonMaker(coordList, port,  bin_start, group_size, num_groups, histogram):
 
 	base = "http://nanocube.govspc.att.com:"
 	base = base + port
@@ -33,7 +33,7 @@ def urlPolygonMaker(coordList, port, timestart, timeend, histogram):
 	base = base + extenstion
 	for i in range(0, len(coordList)):
 		if (i == len(coordList)-1):
-			base = base + "qaddr(" + str(coordList[i]['x']) + "," + str(coordList[i]['y']) + "," + str(coordList[i]['level']) + ")>/@time=0:"+timestart+":"+timeend
+			base = base + "qaddr(" + str(coordList[i]['x']) + "," + str(coordList[i]['y']) + "," + str(coordList[i]['level']) + ")>/@time=" + str(bin_start) + ":" + str(group_size) + ":" + str(num_groups)
 		else:
 			base = base + "qaddr(" + str(coordList[i]['x']) + "," + str(coordList[i]['y']) + "," + str(coordList[i]['level']) + "),"
 
@@ -59,14 +59,14 @@ def urlPolygonMaker(coordList, port, timestart, timeend, histogram):
 
 ################################################################################################
 # Given x,y,z coordinates of a box, formats the url to request the JSON
-def urlMaker(x, y, z, port, timestart, timeend, histogram):
+def urlMaker(x, y, z, port, bin_start, group_size, num_groups, histogram):
 
 	base = "http://nanocube.govspc.att.com:"
 	base = base + port
 	extenstion = '/query/pos='
 	base = base + extenstion
 	histstring = ""
-	base = base + "qaddr(" + str(x) + "," + str(y) + "," + str(z) + ")" + "/@time=0:"+timestart+":"+timeend
+	base = base + "qaddr(" + str(x) + "," + str(y) + "," + str(z) + ")" + ")>/@time=" + str(bin_start) + ":" + str(group_size) + ":" + str(num_groups)
 	if (histogram != None):
 		if (main.histogramstring == ""):
 			keys = histogram.keys()

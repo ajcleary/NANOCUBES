@@ -168,7 +168,7 @@ def processSquare(coords, listQ, maxLevel, init):
 # Pass in the data of the box to an anomaly detector and return the results of he anomalies
 def checkCorners(x, y, z):
 	anomaly = []
-	url = urlmakers.urlMaker(x, y, z, port, timestart, timeend, histogramglob)
+	url = urlmakers.urlMaker(x, y, z, port, binstart, groupsize, numgroups, histogramglob)
 	#print url
 	try:
 		data = urlmakers.processURL(url)
@@ -182,16 +182,20 @@ def checkCorners(x, y, z):
 
 ################################################################################################
 # Run the anomaly detection/traversal on the entire map
-def initializeEntireMap(minLevel, maxLevel, portn , tstart, tend, histogram):
+def initializeEntireMap(minLevel, maxLevel, portn , bin_start, group_size, num_groups, histogram):
 	
 	global port
-	global timestart
-	global timeend
+	global binstart
+	global numgroups
+	global groupsize
 	global histogramglob
+	
 	port = portn
-	timestart = tstart
-	timeend = tend
+	binstart = bin_start
+	numgroups = num_groups
+	groupsize = group_size
 	histogramglob = histogram
+
 	runEntireMap(minLevel)
 	init = False
 	for i in range(0,int(math.pow(2,3))):
