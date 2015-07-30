@@ -172,7 +172,7 @@ try:
     else:
 
         #list of anomalies
-        anomalies = main.polygonAnomaly(boxlist, port, jsonIn['timestart'], jsonIn['timeend'], newhist)
+        anomalies = main.polygonAnomaly(boxlist, port, starting_bucket , group_size , window, newhist)
         polygonAnomlist = []
         xavg = 0
         yavg = 0

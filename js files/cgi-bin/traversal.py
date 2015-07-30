@@ -252,9 +252,9 @@ def runSelectedMap(coords, minSplit, portn ,  bin_start, group_size, num_groups,
 	return anomlist1
 
 
-def runPolygonSelection(coordslist, port, tstart, tend, histogram):
+def runPolygonSelection(coordslist, port, starting_bucket , group_size , window, histogram):
 
-	url = urlmakers.urlPolygonMaker(coordslist, port, tstart, tend, histogram)
+	url = urlmakers.urlPolygonMaker(coordslist, port, starting_bucket , group_size , window , histogram)
 	#print url
 	anomaly = []
 	try:
