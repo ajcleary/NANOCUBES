@@ -1,3 +1,149 @@
+//test1
+// change to the name of your nanocube server port here
+// time start and end for the timeline of data
+var timestart = null;
+var numtimebins = null;
+var groupsize = "1";
+// defaults for min and max level | 2 and 12
+var minlevel = "2";
+var maxlevel = "12";
+var _currList = [];
+var _featureList = [];
+
+function anomalySelected(){
+    var index = $("#anomalyList").val();
+    if (index === _currSelectedFeature){
+        $("#anomalyList").val([]);
+        $("#anomalyDescription").text("");
+        _currSelectedFeature = null;
+        disableFeatureDelete();
+    } else if (index !== null){
+        forceConstraints(_currList[index]);
+        $("#anomalyDescription").text(_currList[index].description);
+        _currSelectedFeature = index;
+        enableFeatureDelete();
+    }
+}
+
+function fullanomalydetection(){
+    $('#runbutton').prop("disabled",true);
+    $('#loadingBar').show()
+    $("#loadingmessage").show()
+    var categories = constrainer.getCategories();
+    categories = (categories === undefined) ? null : categories;
+    var dataToSend = { portnum: port , timestart: timestart, timeend: timeend, minlevel : minlevel , maxlevel : maxlevel, histograms: categories, eventTypes: eventTypes, timeSelect: timeseries.getSelectRange() }
+    $.ajax({
+        url: "/cgi-bin/fullanomaly.py",
+        type: "POST",
+        data: JSON.stringify(dataToSend),
+        success: function(response){
+            $('#runbutton').prop("disabled",false);
+            $('#loadingBar').hide()
+            $("#loadingmessage").hide()
+            console.log(response)
+            var list = []
+            list = JSON.parse(response)
+            if (list.length == 0) {
+                alert("No anomalies found");
+            }
+            else {
+                for (var i = 0; i < list.length; i++){
+                    var item = list[i];
+                    //console.log(item)
+                
+                    $("#anomalyList").append( $(document.createElement("option"))
+                        .text(item.name)
+                        .attr("value", _currList.length)
+                    );
+
+                _currList.push(item);
+                hideFeatureSaveDialog();
+                }
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            //alert("Feature could not be added on server!");
+            console.log(errorThrown)
+            console.log(textStatus)
+        }
+    });
+
+}
+
+function selectedAnomalyDetection(){
+    
+    $('#runbutton').prop("disabled",true);
+    $('#loadingBar').show()
+    $("#loadingmessage").show()
+
+    var newFeature = createFeatureFromCurrent();
+    //console.log(newFeature.timeSelect.startMilli);
+    //console.log(newFeature.timeSelect.endMilli);
+
+
+    newFeature.name = "Run # " + _index.toString() + " " ;
+    _index = _index + 1;
+    var tiles  = constrainer.getTiles();
+    if (tiles == null){
+        alert("please choose a region to run detection on");
+    }
+    //var tiles  = constrainer.getTiles();
+    //var dataToSend = { tileSelection: tiles };
+    //console.log(newFeature);
+    var dataToSend = { 
+        feature: newFeature ,
+        portnum: port,
+        timestart: timestart,
+        numtimebins: numtimebins,
+        groupsize: groupsize,
+		eventTypes: eventTypes
+    };
+    $.ajax({
+        url: "/cgi-bin/regionanomaly.py",
+        type: "POST",
+        data: JSON.stringify(dataToSend),
+        success: function(response){
+            $('#runbutton').prop("disabled",false);
+            $('#loadingBar').hide()
+            $("#loadingmessage").hide()
+            console.log(response)
+            var list = []
+            list = JSON.parse(response)
+            if (tiles.length != 4){
+                alert("No zooming was done for this anomaly detection. For zooming please use the square tool")
+                console.log(response)
+            }
+            else if (tiles[0]['x'] == tiles[1]['x'] && tiles[2]['x'] == tiles[3]['x'] && tiles[0]['y'] == tiles[3]['y'] && tiles[1]['y'] == tiles[2]['y']){
+                alert("Region detection run with zooming")
+            }
+            else {
+                alert("No zooming was done for this anomaly detection. For zooming please use the square tool")
+            }
+            //console.log(list)
+            for (var i = 0; i < list.length; i++){
+                var item = list[i];
+                //console.log(item)
+            
+                $("#anomalyList").append( $(document.createElement("option"))
+                    .text(item.name)
+                    .attr("value", _currList.length)
+                );
+                
+            _currList.push(item);
+            hideFeatureSaveDialog();
+            }
+            
+            //console.log(response)
+        },
+        error: function(jqXHR, textStatus, errorThrown){
+            //alert("Feature could not be added on server!");
+            console.log(errorThrown)
+            console.log(textStatus)
+        }
+    });
+
+}
+
 function addAnomalyButton(){
     var anomalyButton = L.Control.extend({
         options: {
@@ -20,7 +166,14 @@ function addAnomalyButton(){
         _click: function (e){
             L.DomEvent.stopPropagation(e);
             L.DomEvent.preventDefault(e);
-            $("#AnomPopout").toggle();
+            $("#mainAnomaliesDiv").toggle();
+            //console.log($('#featuresDiv').is(":visible"))
+            if($('#featuresDiv').is(":visible")){
+                $("#leaflet-bar-part").css("backgroundPosition", "2px 2px");
+                $("#leaflet-bar-part").title = 'Show the list of saved events';
+                $("#featuresDiv").hide();
+                disableFeatureDelete();
+            }
             //alert("Magical Unicorns")
         }
     });
@@ -28,7 +181,7 @@ function addAnomalyButton(){
     map.addControl(new anomalyButton());
 }
 
-function addAnomalyContainer(){
+/*function addAnomalyContainer(){
     var anomalyContainer = L.Control.extend({
         options: {
             position: 'topleft',
@@ -54,12 +207,12 @@ function addAnomalyContainer(){
              if (this.anom.title === 'Show the list of Anomalies'){
                 this.anom.style.backgroundPosition = "2px -20px";
                 this.anom.title = 'Hide the list of Anomalies';
-                $("#anomaliesDiv").show();
+                $("#newAnomaliesDiv").show();
 
             } else {
                 this.anom.style.backgroundPosition = "2px 2px";
                 this.anom.title = 'Show the list of Anomalies';
-                $("#anomaliesDiv").hide();
+                $("#newAnomaliesDiv").hide();
             }         
 
 
@@ -67,27 +220,35 @@ function addAnomalyContainer(){
     });
 
     map.addControl(new anomalyContainer());
-}
-
+}*/
+// You may have to change pixels... have fun
 $(function(){
-   // var mainAnomaliesDiv = $('<div>', {id: "mainAnomaliesDiv"})
-
-    //;
-    var newAnomaliesDiv = $('<div>', {id: "anomaliesDiv"})
-        .addClass("pull-left")
+    var mainAnomaliesDiv = $('<div>', {id: "mainAnomaliesDiv"})
         .addClass("container")
         .css("left", "50px")
         .css("top", "30px")
         .css("position", "absolute")
-        .css("width", "220px")
+        .css("width", "300px")
         .css("display", "none")
+    ;
+    var newAnomaliesDiv = $('<div>', {id: "anomaliesDiv"})
+        .addClass("pull-left")
+        .addClass("container")
+        .css("left", "1px")
+        .css("top", "157x")
+        .css("position", "absolute")
+        .css("width", "100%")
+        .show()
     ;
 
     var anomalyList = $('<select>', { id: "anomalyList" })
-        .addClass("form -ontrol")
+        .addClass("form-control")
         .attr("size", 15)
         .css("width", "100%")
         .css("height", "175px")
+        .click(function(){
+            anomalySelected()
+        })
 
     ;
 
@@ -99,8 +260,8 @@ $(function(){
     ;
     var saveAnomaly = $('<button>', {id: "anomalyButtonSave"})
         .addClass("btn btn-primary")
-        .css("width", "190px")
-        .css("height", "30px")
+        .css("width", "100%")
+        .css("height", "15%px")
         .text("Save Anomaly")
         .click(function(){
             var value = $("#anomalyList").val();
@@ -113,20 +274,22 @@ $(function(){
                         break;
                     }
                 }*/
-                item = _currList[value]
-                console.log(item)
+                var item = _currList[value]
                 $('#selectFeature').append($(document.createElement("option"))
                     .attr("value", _featureList.length)
                     .text(item.name)
                 );
 
                 _featureList.push(item)
+                console.log(window.location.pathname)
+                var dataToSend = { name: item.name, path: window.location.pathname};
+                console.log(dataToSend)
                 $.ajax({
-                    url: "/cgi-bin/writeToFeatureList.py",
+                    url: "/cgi-bin/savefeature.py",
                     type: "POST",
-                    data: JSON.stringify(_featureList),
+                    data: JSON.stringify(dataToSend),
                     success: function(response){
-                        alert("The Magical Unicorn has Landed")
+                        alert("Point of Interest Saved")
                     },
                     error: function(jqXHR, textStatus, errorThrown){
                         alert("Feature could not be added on server!");
@@ -140,7 +303,7 @@ $(function(){
     newAnomaliesDiv.append(anomalyDescription);
     newAnomaliesDiv.append(saveAnomaly);
 
-    $("body").append(newAnomaliesDiv);
+    //$("body").append(newAnomaliesDiv);
 
     ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -152,6 +315,7 @@ $(function(){
         .css("width", "270px")
         .css("height", "150px")
         .css("display", "none")
+        .show()
 
     ;
 
@@ -160,7 +324,7 @@ $(function(){
     AnomPopout.append('<p class="text-primary"><b>Choose anomaly detection type</b></p>');
     var anomalyList = $('<button>', { id: "anomalyList" })
         .css("width", "100%")
-        .css("height", "300px")
+        .css("height", "285px")
     ;
     var anombutton1 = $('<input type="radio" name="rad" id="test1" value="1">');
     var anombutton2 = $('<input type="radio" name="rad" id="test2" value="2">');
@@ -179,11 +343,13 @@ $(function(){
 
             if($('#test1').is(':checked')) {
                 console.log("running")
+                $('#anomalyList').empty()
                 fullanomalydetection();
             }
             else if ($('#test2').is(':checked')) {
-                //alert("Running detection");
-                anomalydetection();
+                console.log("Running detection")
+                $('#anomalyList').empty()
+                selectedAnomalyDetection();
             }
             else {
                 alert("Select an option!");
@@ -191,8 +357,19 @@ $(function(){
         })
     ;
 
-    var loadingmessage = $('<p id="loadingmessage">...</p>')
+    var loadingmessage = $('<p id="loadingmessage"><b>...</b></p>')
+        .css("position", "absolute")
+        .css("bottom", "3px")
+        .css("margin-left", "185px")
+        .hide()
+    ;
+    var loadingBar = $('<img id="loadingBar" src="/css/images/loading_bar.gif" />')
+        .css("position", "absolute")
+        .css("bottom", "5px")
+        .css("margin-left", "160px")
+        .hide()
 
+    ;
     
     AnomPopout.append(anombutton1);
     AnomPopout.append('<label for="test1">Full detection</label>');
@@ -201,14 +378,17 @@ $(function(){
     AnomPopout.append('<label for="test2">Region detection</label>');
     AnomPopout.append('<br/>');
     AnomPopout.append(anombutton3);
-    AnomPopout.append($('<img id="loadingbar" src="/css/images/loading_bar.gif" />'))
+    AnomPopout.append(loadingBar)
     AnomPopout.append(loadingmessage);
-    newAnomaliesDiv.append(AnomPopout);
+    //newAnomaliesDiv.append(AnomPopout);
 
     //$("body").append(AnomPopout);
+    mainAnomaliesDiv.append(AnomPopout)
+    mainAnomaliesDiv.append(newAnomaliesDiv)
+    $("body").append(mainAnomaliesDiv);
 
     addAnomalyButton();
-    addAnomalyContainer();
+    //addAnomalyContainer();
 
 
 });

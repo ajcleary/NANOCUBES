@@ -14,16 +14,13 @@ Done:
 -save file rewriting 
 -improved gui to pretty buttons etc.
 -global port variable
-
+-added zoom for full anomaly
+-fixed time zoom for full anomaly
 
 
 To Do List:   (for IN PROGRESS items put your initials after the :) add to the list
 
--fix time zoom for full anomaly
-
--add zoom for fulkl anomaly
-
--make anomaly detection server side :
+-set global port, time bin start and end, and min and max levels
 
 regionanomaly.py
 -add user inputs time window to the anomaly region 

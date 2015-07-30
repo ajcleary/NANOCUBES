@@ -3,6 +3,7 @@ import sys, json, platform, os, urllib, time
 from traversal import main
 import cgitb
 import datetime
+from copy import deepcopy
 cgitb.enable()
 #print the header
 print "Content-Type: text/plain\n\n",
@@ -10,7 +11,6 @@ print "Content-Type: text/plain\n\n",
 try:
 	# load input
 	jsonIn = json.load(sys.stdin)
-
 	# variables from features.js
 	port = jsonIn['portnum']
 	timestart = jsonIn['timestart']
@@ -42,8 +42,20 @@ try:
 		secondsperbin = 60*60*24
 		msecondsperbin = 1000*60*60*24
 
+	histograms = jsonIn['histograms']
+	eventTypes = jsonIn['eventTypes']
+	newhist = deepcopy(histograms)
+
+    #Need to convert the histograms dictionary to the values that will be queried
+	if (histograms != None):
+		keys  = histograms.keys()
+		for i in range(0, len(histograms)):
+			for j in range(0, len(histograms[keys[i]])):
+				currindex = eventTypes.index(histograms[keys[i]][j])
+				newhist[keys[i]][j] = currindex
+
 	# run algorithm  - output: list of anomalies
-	anomlist = main.fullAnomaly(port, timestart, timeend, minlevel, maxlevel)
+	anomlist = main.fullAnomaly(port, timestart, timeend, minlevel, maxlevel, newhist)
 	#print anomlist
 	jsonlist = []
 	# add info to each anomaly so it can be described and seen in gui
@@ -60,21 +72,21 @@ try:
 		dict3 = dict()
 		dict4 = dict()
 		#We will zoom in one level to get the four corners of the box
-		dict1['level'] = level+1
-		dict1['x'] = 2*currx
-		dict1['y'] = 2*curry
+		dict1['level'] = level+5
+		dict1['x'] = 32*currx
+		dict1['y'] = 32*curry
 		anomdictlist.append(dict1)
-		dict2['level'] = level+1
-		dict2['x'] = 2*currx
-		dict2['y'] = (2*curry)+2
+		dict2['level'] = level+5
+		dict2['x'] = 32*currx
+		dict2['y'] = (curry+1)*32
 		anomdictlist.append(dict2)
-		dict3['level'] = level+1
-		dict3['x'] = (2*currx)+2
-		dict3['y'] = (2*curry)+2
+		dict3['level'] = level+5
+		dict3['x'] = (currx+1)*32
+		dict3['y'] = (curry+1)*32
 		anomdictlist.append(dict3)
-		dict4['level'] = level+1
-		dict4['x'] = (2*currx)+2
-		dict4['y'] = 2*curry
+		dict4['level'] = level+5
+		dict4['x'] = (currx+1)*32
+		dict4['y'] = 32*curry
 		anomdictlist.append(dict4)
 
 		currdict['tileSelection'] = anomdictlist
@@ -91,10 +103,11 @@ try:
 		currentTime = FIRSTDATE + (anomaly*secondsperbin*timebucketmultiplier)
 		currdict['timeSelect'] = dict()
 		currdict['timeZoom'] = dict()
-		currdict['timeSelect']['startMilli'] = long(currentTime*1000 - msecondsperbin/2)
-		currdict['timeSelect']['endMilli'] =  long(currentTime*1000 + msecondsperbin/2)
-		currdict['timeZoom']['startMilli'] = long(currentTime*1000 - 10*msecondsperbin)
-		currdict['timeZoom']['endMilli'] = long(currentTime*1000 + 10*msecondsperbin)
+		currdict['timeSelect']['startMilli'] = long(currentTime*1000 - msecondsperbin) 
+		currdict['timeSelect']['endMilli'] =  long(currentTime*1000 + msecondsperbin)
+		currdict['timeZoom']['startMilli'] = None
+		currdict['timeZoom']['endMilli'] = None
+		currdict['histograms'] = jsonIn['histograms']
 		# add it to the output
 		jsonlist.append(currdict)
 

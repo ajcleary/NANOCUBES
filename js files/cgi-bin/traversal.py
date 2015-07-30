@@ -12,8 +12,9 @@ selectedQ = Queue.Queue()
 splits = 0
 
 port = ""
-timestart = ""
-timeend = ""
+binstart = ""
+numgroups = ""
+groupsize = "1"
 
 ################################################################################################
 # The selected box does not zoom in any further levels, just making smaller boxes on the level it is started on
@@ -62,7 +63,7 @@ def processSelected(coords, listQ, minSplits):
 def checkSelectedCorners(x1, x2, y1, y2, z):
 
 	anomaly = []
-	url = urlmakers.urlBoxMaker(x1, x2, y1, y2, z, port, timestart, timeend)
+	url = urlmakers.urlBoxMaker(x1, x2, y1, y2, z, port, binstart, groupsize, numgroups, histogramglob)
 	#print url
 	try:
 		data = urlmakers.processURL(url)
@@ -167,7 +168,7 @@ def processSquare(coords, listQ, maxLevel, init):
 # Pass in the data of the box to an anomaly detector and return the results of he anomalies
 def checkCorners(x, y, z):
 	anomaly = []
-	url = urlmakers.urlMaker(x, y, z, port, timestart, timeend)
+	url = urlmakers.urlMaker(x, y, z, port, timestart, timeend, histogramglob)
 	#print url
 	try:
 		data = urlmakers.processURL(url)
@@ -181,15 +182,16 @@ def checkCorners(x, y, z):
 
 ################################################################################################
 # Run the anomaly detection/traversal on the entire map
-def initializeEntireMap(minLevel, maxLevel, portn , tstart, tend):
+def initializeEntireMap(minLevel, maxLevel, portn , tstart, tend, histogram):
 	
 	global port
 	global timestart
 	global timeend
+	global histogramglob
 	port = portn
 	timestart = tstart
 	timeend = tend
-
+	histogramglob = histogram
 	runEntireMap(minLevel)
 	init = False
 	for i in range(0,int(math.pow(2,3))):
@@ -224,13 +226,18 @@ def initializeSelectedMap(coords, maxLevel):
 
 ################################################################################################
 # Run the the initial que for the selected map
-def runSelectedMap(coords, minSplit, portn , tstart, tend):
+def runSelectedMap(coords, minSplit, portn ,  bin_start, group_size, num_groups, histogram):
 	global port
-	global timestart
-	global timeend
+	global binstart
+	global numgroups
+	global groupsize
+	global histogramglob
+	
 	port = portn
-	timestart = tstart
-	timeend = tend
+	binstart = bin_start
+	numgroups = num_groups
+	groupsize = group_size
+	histogramglob = histogram
 	init = True
 	listQ = []
 	q.put((coords, listQ))
@@ -241,9 +248,9 @@ def runSelectedMap(coords, minSplit, portn , tstart, tend):
 	return anomlist1
 
 
-def runPolygonSelection(coordslist, port, tstart, tend):
+def runPolygonSelection(coordslist, port, tstart, tend, histogram):
 
-	url = urlmakers.urlPolygonMaker(coordslist, port, tstart, tend)
+	url = urlmakers.urlPolygonMaker(coordslist, port, tstart, tend, histogram)
 	#print url
 	anomaly = []
 	try:

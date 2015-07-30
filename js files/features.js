@@ -4,20 +4,7 @@
 var _SHAPE_OPTIONS = { weight: 2, opacity:.9, color:"#DC6BA3" };
 var _currSelectedFeature = null;
 var _featureDeleteLink = null;
-var _featureList = [];
 var _index = 1;
-var _currList = [];
-
-// change to the name of your nanocube server port in main
-
-// time start and end for the timeline of data
-var timestart = "1";
-var timeend = "9";
-
-// defaults for min and max level | 2 and 12
-var minlevel = "2";
-var maxlevel = "5" ;
-
 
 function forceConstraints(constraints){
     map.setView(constraints.geoCenter, constraints.zoomLevel);
@@ -84,21 +71,6 @@ function drawPolygon(tiles){
     L.polygon(coords, _SHAPE_OPTIONS).addTo(map.drawnItems);
 }
 
-function featureSelected(){
-    var index = $("#selectFeature").val();
-    if (index === _currSelectedFeature){
-        $("#selectFeature").val([]);
-        $("#featureDescription").text("");
-        _currSelectedFeature = null;
-        disableFeatureDelete();
-    } else if (index !== null){
-        forceConstraints(_featureList[index]);
-        $("#featureDescription").text(_featureList[index].description);
-        _currSelectedFeature = index;
-        enableFeatureDelete();
-    }
-}
-
 function createFeatureFromCurrent(){
     var tiles = constrainer.getTiles();
     tiles = (tiles === undefined) ? null : tiles;
@@ -119,112 +91,18 @@ function createFeatureFromCurrent(){
     };
 }
 
-function anomalySelected(){
-    var index = $("#anomalyList").val();
+function featureSelected(){
+    var index = $("#selectFeature").val();
     if (index === _currSelectedFeature){
-        $("#anomalyList").val([]);
-        $("#anomalyDescription").text("");
+        $("#selectFeature").val([]);
+        $("#featureDescription").text("");
         _currSelectedFeature = null;
         disableFeatureDelete();
     } else if (index !== null){
-        forceConstraints(_currList[index]);
-        $("#anomalyDescription").text(_currList[index].description);
+        forceConstraints(_featureList[index]);
+        $("#featureDescription").text(_featureList[index].description);
         _currSelectedFeature = index;
         enableFeatureDelete();
-    }
-}
-
-function fullanomalydetection(){
-    $('#runbutton').prop("disabled",true);
-    $("#loadingmessage").show()
-    var dataToSend = { portnum: port , timestart: timestart, timeend: timeend, minlevel : minlevel , maxlevel : maxlevel }
-    $.ajax({
-        url: "/cgi-bin/fullanomaly.py",
-        type: "POST",
-        data: JSON.stringify(dataToSend),
-        success: function(response){
-            $('#runbutton').prop("disabled",false);
-            $("#loadingmessage").hide();
-            console.log(response)
-            var list = []
-            list = JSON.parse(response)
-            if (list.length == 0) {
-                alert("No anomalies found");
-            }
-            else {
-                for (var i = 0; i < list.length; i++){
-                    var item = list[i];
-                    //console.log(item)
-                
-                    $("#anomalyList").append( $(document.createElement("option"))
-                        .text(item.name)
-                        .attr("value", _currList.length)
-                    );
-
-                _currList.push(item);
-                hideFeatureSaveDialog();
-                }
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown){
-            //alert("Feature could not be added on server!");
-            console.log(errorThrown)
-            console.log(textStatus)
-        }
-    });
-
-}
-
-function anomalydetection(){
-    var newFeature = createFeatureFromCurrent();
-    newFeature.name = "Run # " + _index.toString() + " " ;
-    _index = _index + 1;
-    var tiles  = constrainer.getTiles();
-    if (tiles == null){
-        alert("please choose a region to run detection on");
-    }
-    /*
-    else if (tiles.length != 4) {
-        alert("please don't use the polygon tool");
-    }
-    */
-    //var dataToSend = { tileSelection: tiles };
-    //console.log(newFeature);
-    else {
-        var dataToSend = { feature: newFeature , portnum: port , timestart: timestart, timeend: timeend}
-        $.ajax({
-            url: "/cgi-bin/regionanomaly.py",
-            type: "POST",
-            data: JSON.stringify(dataToSend),
-            success: function(response){
-                console.log(response)
-                var list = []
-                list = JSON.parse(response)
-                if (tiles.length != 4){
-                    alert("no zooming was done for this run")
-                    console.log(response)
-                }
-                for (var i = 0; i < list.length; i++){
-                    var item = list[i];
-                    //console.log(item)
-                    
-                    $("#anomalyList").append( $(document.createElement("option"))
-                        .text(item.name)
-                        .attr("value", _currList.length)
-                    );
-                        
-                    _currList.push(item);
-                    hideFeatureSaveDialog();
-                }
-                
-                 //console.log(response)
-            },
-            error: function(jqXHR, textStatus, errorThrown){
-                //alert("Feature could not be added on server!");
-                console.log(errorThrown)
-                console.log(textStatus)
-            }
-        });
     }
 }
 
@@ -330,7 +208,7 @@ function deleteCurrentFeature(){
 }
 
 function addFeatureButtons(){
-    var FeatureButton = L.Control.extend({
+    var FeatureButton = L.Control.extend( {
         options: {
             position: 'topleft',
         },
@@ -369,12 +247,16 @@ function addFeatureButtons(){
             L.DomEvent.preventDefault(e);
 
             if (this.linkShow.title === 'Show the list of saved events'){
-                this.linkShow.style.backgroundPosition = "2px -20px";
+                //this.linkShow.style.backgroundPosition = "2px -20px";
                 this.linkShow.title = 'Hide the list of saved events';
                 $("#featuresDiv").show();
                 if ($("#selectFeature").val() !== null){
                     enableFeatureDelete();
                 }
+                if ($('#mainAnomaliesDiv').is(":visible")){
+                    $('#mainAnomaliesDiv').hide()
+                }
+
             } else {
                 this.linkShow.style.backgroundPosition = "2px 2px";
                 this.linkShow.title = 'Show the list of saved events';
@@ -404,13 +286,16 @@ function addFeatureButtons(){
 $(function(){
     //add the HTML for the selector
     var mainDiv = $('<div>', { id: "featuresDiv" })
+        .addClass("container")
         .css("left", "50px")
-        .css("top", "10px")
+        .css("top", "30px")
         .css("position", "absolute")
-        .css("width", "220px")
+        .css("width", "300px")
+        .css("height", "175px")
         .css("display", "none")
     ;
     var selectList = $('<select>', { id: "selectFeature" })
+        .addClass("form-control")
         .attr("size", 15)
         .css("width", "100%")
         .css("height", "175px")
@@ -421,9 +306,32 @@ $(function(){
         .css("height", "150px")
         .css("weight", "100%")
     ;
-    mainDiv.append(selectList);
-    mainDiv.append(description);
-    $("body").append(mainDiv);
+    var saveFeatureHeader = $('<p id="saveFeatureHeader" class="text-primary"><b>Saved Points of Interest</b></p>')
+        .css("background-color", "white")
+        .css("width", "100%")
+
+    ;
+    var headerDiv = $('<div>', { id: "headerDiv" })
+        .addClass("container")
+        .css("width", "100%")
+        .css("background-color", "white")
+        .css("border", "2px solid orange")
+    ;
+    /*var removeFeatureButton = $('<button>', { id: "removeFeatureButton" })
+        .addClass("btn btn-danger")
+        .css("width", "100%")
+        .css("height", "20%")
+        .text("Delete Point of Interest")
+        .click(function(){
+            deleteCurrentFeature()
+        })
+    ;*/
+    headerDiv.append(saveFeatureHeader)
+    mainDiv.append(headerDiv)
+    mainDiv.append(selectList)
+    mainDiv.append(description)
+    //mainDiv.append(removeFeatureButton)
+    $("body").append(mainDiv)
 
     //load the feature file
     $.ajax({

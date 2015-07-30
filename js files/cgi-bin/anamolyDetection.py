@@ -16,7 +16,7 @@ def anomalyDetector(data):
 	s = Series(values, index = keys)
 	std =  s.std()
 	mean  = s.mean()
-	newS = s[s>(mean+(2.5*std))]
+	newS = s[s>(mean+(1.5*std))]
 	test = newS.index.tolist()
 	return test
 

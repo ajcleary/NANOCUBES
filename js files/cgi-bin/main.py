@@ -3,7 +3,7 @@ import sys
 import traversal
 import urlmakers
 
-
+histogramstring = ""
 class coord:
 	def __init__(self, x, y, z):
 		self.x = x
@@ -24,30 +24,30 @@ def convertCoords(x, y, level):
 
 ################################################################################################
 
-def boxAnomaly(x1, x2, y1, y2, z, port , tstart, tend):
+def boxAnomaly(x1, x2, y1, y2, z, port , bin_start, group_size, num_groups, histogram):
 	coords = (x1, x2, y1, y2, z)
 	if x2 - x1 > 4 and y2 - y1 > 4:
 		minSplit = 2
 	else:
 		minSplit = 0
-	anomlist = traversal.runSelectedMap(coords, minSplit, port , tstart, tend)
+	anomlist = traversal.runSelectedMap(coords, minSplit, port , bin_start, group_size, num_groups, histogram)
 	return anomlist
 
 ################################################################################################
 
 
-def polygonAnomaly(coordlist, port, tstart, tend):
+def polygonAnomaly(coordlist, port, tstart, tend, histogram):
 	
-	anomalies = traversal.runPolygonSelection(coordlist, port, tstart, tend)
+	anomalies = traversal.runPolygonSelection(coordlist, port, tstart, tend, histogram)
 	return anomalies
 
 
 ################################################################################################
 
 
-def fullAnomaly(port, timestart, timeend, minlevel, maxlevel):
+def fullAnomaly(port, timestart, timeend, minlevel, maxlevel,histogram):
 	#print "got into main fullanomaly"
-	a = traversal.initializeEntireMap(int(minlevel), int(maxlevel), port, timestart, timeend)
+	a = traversal.initializeEntireMap(int(minlevel), int(maxlevel), port, timestart, timeend, histogram)
 	#print "did traversal initialize"
 	return a
 
