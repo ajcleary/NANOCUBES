@@ -8,10 +8,7 @@ var timeseries;
 var histograms = [];
 var constrainer;
 var drawer;
-
-//this line was added for anomaly detection
-var port = "28150";
-
+var port = "28150"
 var eventTypes = ["Make public statement", "Appeal", 
 		"Express intent to cooperate",
                 "Consult", "Engage in diplomatic cooperation", 

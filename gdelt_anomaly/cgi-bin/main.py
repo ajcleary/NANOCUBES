@@ -65,7 +65,7 @@ def fullAnomaly(port, bin_start, group_size, num_groups, minlevel, maxlevel,hist
 	a = traversal.initializeEntireMap(int(minlevel), int(maxlevel), histogram)
 	return a
 
-#This is the function handling command line inputs and run the correct program based on these inputs
+
 def main(args):
 	if (args[1] == "-h"):
 		print "For region selection use -r. For full anomaly detection use -f."
@@ -78,14 +78,12 @@ def main(args):
 		print "First argument after the function call is '-r'."
 		print "This is followed by (2. x1 (3. x2 (4. y1 (5. y2 (6. level of the box (7. port number (8. starting time bin (9. Number of time bins in a group (10. number of groups (11. standard deviation threshold (12. number of times you want the algorithm to split your box"
 
-	#The user should use -f after calling anomaly.py to indicate full anomaly detection
 	elif (args[1] == "-f"):
 		if (len(args) == 9):
 			port = args[2]
 			bin_start = args[3]
 			group_size = args[4]
 			num_groups = args[5]
-			#checking for valid arguments
 			try:
 				minlevel = int(args[6])
 				maxlevel = int(args[7])
@@ -102,7 +100,7 @@ def main(args):
 				int(bin_start)
 				int(group_size)
 				int(num_groups)
-			#checking for valid arguments
+
 			except:
 				print "Invalid arguments: Port, starting bin, group size, and number of groups should be intergers, for help please use the argument '-h'"
 				sys.exit()
@@ -117,7 +115,6 @@ def main(args):
 			if (len(anom) == 0):
 				print "No anomalies found"
 			
-			#The list of anomlies is printed showing the x and y coordinates, the level, and the time bin the anomaly occured in
 			else:
 				print str(len(anom)) + " anomalies found in full anomaly detection:"
 				for i in range(0, len(anom)):
@@ -127,7 +124,6 @@ def main(args):
 			print "Invalid number of arguments, for help please use the argument '-h'"
 			sys.exit()
 
-	#The user should use -r after calling anomaly.py to indicate region anomaly detection
 	elif (args[1] == "-r"):
 		if (len(args) == 13):
 			try:
@@ -136,7 +132,7 @@ def main(args):
 				y1 = int(args[4])
 				y2 = int(args[5])
 				level = int(args[6])
-			#checking for valid arguments
+
 			except: 
 				print "Invalid arguments: The x and y coordinates of the box and the level must be intergers, for help please use the argument '-h'"
 				sys.exit()
@@ -145,7 +141,7 @@ def main(args):
 			bin_start = args[8]
 			group_size = args[9]
 			num_groups = args[10]
-			#checking for valid arguments
+
 			try:
 				int(port)
 				int(bin_start)
@@ -155,7 +151,7 @@ def main(args):
 			except:
 				print "Invalid arguments: port, starting bin, group size, and number of groups should be intergers, for help please use the argument '-h'"
 				sys.exit()
-			#checking for valid arguments
+
 			try:
 				threshold = float(args[11])
 				minSplit = int(args[12])
