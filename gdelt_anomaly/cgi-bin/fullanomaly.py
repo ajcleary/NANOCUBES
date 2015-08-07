@@ -11,14 +11,9 @@ print "Content-Type: text/plain\n\n",
 
 try:
 	#load input
-	if platform.system() == "Windows": #for development
-		x = int(sys.stdin.read(12))
-		data = sys.stdin.read(x)
-		jsonIn = json.loads(data)
-	else: #platform is linux
-		x = int(sys.stdin.read(12))
-		data = sys.stdin.read(x)
-		jsonIn = json.loads(data)
+	x = int(sys.stdin.read(12))
+	data = sys.stdin.read(x)
+	jsonIn = json.loads(data)
 	# variables from features.js
 	port = jsonIn['portnum']
 	timestart = jsonIn['timestart']
